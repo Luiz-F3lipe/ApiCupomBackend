@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+import { Coupon } from "../entities/Coupon";
+import { Store } from "../entities/Store";
 import { couponRepository } from "../repositories/CouponRepository";
 import { storeRepository } from "../repositories/StoreRepository";
 
@@ -59,6 +61,35 @@ export class StoreContoller {
         } catch (error) {
             console.log(error)
             return res.status(500).json({ msg: "Internal Server Error" })
+        }
+    }
+
+    async delete(req: Request, res: Response) {
+        const { idStore } = req.params;
+
+        if (!idStore) {
+            return res.status(400).json({ msg: 'Falha ao deletar verifique se enviou os parametros' })
+        }
+
+        try {
+            const selectStore = await storeRepository.findOneBy({ id: Number(idStore)})
+            const cupons = selectStore?.coupon[].store
+            console.log(cupons)
+
+            if (!selectStore) {
+                return res.status(404).json({msg: "Loja não encontrada!"})
+            }
+
+            if (cupons) {
+                await couponRepository.remove(cupons)
+            }
+
+            await storeRepository.remove(selectStore);
+
+            return res.status(204).json({msg: "Loja Deletada"});
+        } catch (error) {
+            //console.log(error)
+            return res.status(500).json({ msg: "Internal Server Error"})
         }
     }
 }
