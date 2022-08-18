@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { CouponController } from "./controllers/CouponController";
 import { StoreContoller } from "./controllers/StoreController";
+import { UserController } from "./controllers/UserController";
 
 const routes = Router();
 
@@ -13,5 +14,10 @@ routes.get('/store', new StoreContoller().list);
 routes.post('/coupon/:idStore/create', new CouponController().create);
 routes.delete('/coupon/:idCoupon', new CouponController().delete);
 routes.get('/coupon', new CouponController().list);
+
+//Rotas Usuarios
+routes.post('/user', new UserController().create);
+routes.post('/user/:idUser/coupon', new UserController().couponUser);
+routes.get('/user', new UserController().list);
 
 export default routes;

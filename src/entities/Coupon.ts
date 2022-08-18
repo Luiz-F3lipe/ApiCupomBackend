@@ -21,5 +21,5 @@ export class Coupon {
     store: Store
 
     @ManyToMany(() => User, user => user.coupons)
-    user: User[]
+    users: User[]
 }
