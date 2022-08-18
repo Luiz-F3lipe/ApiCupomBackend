@@ -15,7 +15,7 @@ export class Store {
     @Column()
     link: string
 
-    @OneToMany(() => Coupon, coupon => coupon.store)
+    @OneToMany(() => Coupon, coupon => coupon.store, { onDelete: 'CASCADE' })
     coupon: Coupon[]
 
 }
