@@ -6,13 +6,15 @@ import routes from './routes'
 AppDataSource.initialize().then(() => {
     const app = express()
 
+    const port = process.env.PORT || 3000
+
     app.use(express.json())
 
     app.get('/', (req, res) => {
-        return res.send("Api Works!")
+        return res.send("Brenda eu te amo <3")
     })
 
     app.use(routes)
 
-    return app.listen(3000)
+    return app.listen(port)
 })
