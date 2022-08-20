@@ -8,6 +8,10 @@ AppDataSource.initialize().then(() => {
 
     app.use(express.json())
 
+    app.get('/', (req, res) => {
+        return res.send("Api Works!")
+    })
+
     app.use(routes)
 
     return app.listen(3000)
