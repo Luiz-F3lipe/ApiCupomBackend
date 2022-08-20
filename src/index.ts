@@ -3,18 +3,18 @@ import { AppDataSource } from './data-souce'
 import routes from './routes'
 
 //Cria o express após iniciar o banco de dados
-AppDataSource.initialize().then(() => {
-    const app = express()
+//AppDataSource.initialize()
 
-    const port = process.env.PORT || 3000
+const app = express()
 
-    app.use(express.json())
+const port = process.env.PORT || 3000
 
-    app.get('/', (req, res) => {
-        return res.send("Brenda eu te amo <3")
-    })
+app.use(express.json())
 
-    app.use(routes)
-
-    return app.listen(port)
+app.get('/', (req, res) => {
+    return res.send("Brenda eu te amo <3")
 })
+
+app.use(routes)
+
+app.listen(port)
