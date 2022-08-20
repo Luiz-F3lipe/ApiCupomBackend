@@ -1,31 +1,31 @@
 import { NextFunction, Request, Response } from "express";
-import { userRepository } from "../repositories/UserRepository";
 import jwt from 'jsonwebtoken';
 
-type JwtPayload = {
-    id: number
-}
+export async function authToken(req: Request, res: Response, next: NextFunction) {
+    const authToken = req.headers.authorization as string;
 
-export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-    const { authorization } = req.headers;
-
-     if (!authorization) {
-        return res.status(401).json({msg: 'Não autorizado!'});
+    if (!authToken) {
+        return res.status(401).json({ msg: "Token não encontrado!" });
     }
 
-    const token = authorization.split(' ')[1];
+    const parts = authToken.split(' ');
 
-    const { id } = jwt.verify(token, 'projetoIntegrador') as JwtPayload;
-
-    const user =  await userRepository.findOneBy({ id })
-
-    if (!user) {
-        return res.status(401).json({msg: 'Não autorizado!'});
+    if (!(parts.length === 2)) {
+        return res.status(401).json({ msg: "Token mal informado!" });
     }
 
-    const { senha: _, ...loggedUser } = user;
+    const [schema, token] = parts;
 
-    req.user = loggedUser
+    if (!/^Bearer$/i.test(schema)) {
+        return res.status(401).json({ msg: "Token mal informado!" });
+    }
 
-    next();
+    jwt.verify(token, 'projetoIntegrador', (error, decodedToken) => {
+        if (error) {
+            console.log(error.message);
+            return res.status(401).json({ msg: "Token invalido" })
+        }
+
+        return next();
+    });
 }

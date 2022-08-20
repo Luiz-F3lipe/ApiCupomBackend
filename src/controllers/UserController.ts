@@ -5,17 +5,17 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 export class UserController {
-     async create(req: Request, res: Response) {
+    async create(req: Request, res: Response) {
         const { email, senha } = req.body;
 
-        const userExists =  await userRepository.findOneBy({email: email})
+        const userExists = await userRepository.findOneBy({ email: email })
 
         if (!email || !senha) {
             return res.status(400).json({ message: 'O Email e senha é obrigatório' })
         }
 
         if (userExists) {
-            return res.status(500).json({msg: 'Email ja cadastrado!'})
+            return res.status(500).json({ msg: 'Email ja cadastrado!' })
         }
 
         const hashPassword = await bcrypt.hash(senha, 10)
@@ -29,7 +29,7 @@ export class UserController {
             await userRepository.save(newUser);
 
             return res.status(201).json(newUser)
-            
+
         } catch (error) {
             console.log(error)
             return res.status(500).json({ message: 'Internal Server Error' })
@@ -37,11 +37,11 @@ export class UserController {
     }
 
     async couponUser(req: Request, res: Response) {
-        const { coupon_id } = req.body;
-        const { idUser } = req.params;
+        //const { coupon_id } = req.body;
+        const { idUser, coupon_id } = req.params;
 
         try {
-            const user = await userRepository.findOneBy({ id: Number(idUser)});
+            const user = await userRepository.findOneBy({ id: Number(idUser) });
 
             if (!user) {
                 return res.status(404).json({ message: 'Usuario não encontrado' })
@@ -63,7 +63,7 @@ export class UserController {
             await userRepository.save(userUpdate)
 
             return res.status(200).json(userUpdate)
-            
+
         } catch (error) {
             console.log(error)
             return res.status(500).json({ message: 'Internal Server Error' })
@@ -72,48 +72,16 @@ export class UserController {
 
     async list(req: Request, res: Response) {
         try {
-			const users = await userRepository.find({
-				relations: {
-					coupons: true,
-				},
-			})
+            const users = await userRepository.find({
+                relations: {
+                    coupons: true,
+                },
+            })
 
-			return res.json(users)
-		} catch (error) {
-			console.log(error)
-			return res.status(500).json({ message: 'Internal Sever Error' })
-		}
-    }
-
-    async login(req: Request, res: Response) { 
-        const { email, senha } = req.body;
-
-        const user =  await userRepository.findOneBy({email: email})
-
-        if (!user) {
-            return res.status(500).json({msg: 'Email ou senha invalidos'})
+            return res.json(users)
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({ message: 'Internal Sever Error' })
         }
-
-        const verifyPassword = await bcrypt.compare(senha, user.senha)
-
-        if (!verifyPassword) {
-            return res.status(500).json({msg: 'Email ou senha invalidos'})
-        }
-
-        const token = jwt.sign({ id: user.id },  'projetoIntegrador', { expiresIn: '1d'})
-
-        const { senha: _, ...userLogin } = user
-
-        return res.json({
-            user: userLogin,
-            token: token,
-        })
     }
-
-    async getProfile(req: Request, res: Response) {
-        
-
-        return res.json();
-    }
-
 }
