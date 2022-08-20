@@ -11,7 +11,7 @@ AppDataSource.initialize().then(() => {
     app.use(express.json())
 
     app.get('/', (req, res) => {
-        return res.send("Brenda eu te amo <3")
+        return res.json({ msg: "Api works!" })
     })
 
     app.use(routes)
