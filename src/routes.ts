@@ -20,4 +20,10 @@ routes.post('/user', new UserController().create);
 routes.post('/user/:idUser/coupon', new UserController().couponUser);
 routes.get('/user', new UserController().list);
 
+//Rota de Login
+routes.post('/login', new UserController().login);
+
+
+//Rota Profile
+routes.get('/profile', new UserController().getProfile);
 export default routes;

@@ -1,19 +1,29 @@
 import { Request, Response } from "express";
 import { couponRepository } from "../repositories/CouponRepository";
 import { userRepository } from "../repositories/UserRepository";
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 export class UserController {
      async create(req: Request, res: Response) {
         const { email, senha } = req.body;
 
+        const userExists =  await userRepository.findOneBy({email: email})
+
         if (!email || !senha) {
             return res.status(400).json({ message: 'O Email e senha é obrigatório' })
         }
 
+        if (userExists) {
+            return res.status(500).json({msg: 'Email ja cadastrado!'})
+        }
+
+        const hashPassword = await bcrypt.hash(senha, 10)
+
         try {
-            const newUser = await userRepository.create({
+            const newUser = userRepository.create({
                 email,
-                senha
+                senha: hashPassword
             })
 
             await userRepository.save(newUser);
@@ -73,6 +83,37 @@ export class UserController {
 			console.log(error)
 			return res.status(500).json({ message: 'Internal Sever Error' })
 		}
+    }
+
+    async login(req: Request, res: Response) { 
+        const { email, senha } = req.body;
+
+        const user =  await userRepository.findOneBy({email: email})
+
+        if (!user) {
+            return res.status(500).json({msg: 'Email ou senha invalidos'})
+        }
+
+        const verifyPassword = await bcrypt.compare(senha, user.senha)
+
+        if (!verifyPassword) {
+            return res.status(500).json({msg: 'Email ou senha invalidos'})
+        }
+
+        const token = jwt.sign({ id: user.id },  'projetoIntegrador', { expiresIn: '1d'})
+
+        const { senha: _, ...userLogin } = user
+
+        return res.json({
+            user: userLogin,
+            token: token,
+        })
+    }
+
+    async getProfile(req: Request, res: Response) {
+        
+
+        return res.json();
     }
 
 }
