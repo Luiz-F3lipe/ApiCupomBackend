@@ -14,21 +14,25 @@ routes.post('/user', new UserController().create);
 routes.post('/login', new AuthenticationController().login);
 
 /// precias autenticação
-routes.use(authToken)
+//routes.use(authToken)
 
 //Rotas das Lojas
 routes.post('/store', new StoreContoller().create);
 routes.delete('/store/:idStore', new StoreContoller().delete);
-routes.get('/store', new StoreContoller().list);
+routes.get('/stores', new StoreContoller().list);
+routes.get('/store/:idStore', new StoreContoller().listOne);
 
 //Rotas dos cupons
 routes.post('/coupon/:idStore/create', new CouponController().create);
 routes.delete('/coupon/:idCoupon', new CouponController().delete);
-routes.get('/coupon', new CouponController().list);
+routes.get('/coupons', new CouponController().list);
+routes.get('/coupon/:idCoupon', new CouponController().listOne);
 
+//Rotas dos Usuarios
 //Rota para adicionar aos favoritos -------------
 routes.post('/user/:idUser/coupon/:coupon_id', new UserController().couponUser);
 //---------------------------------
-routes.get('/user', new UserController().list);
+routes.get('/users', new UserController().list);
+routes.get('/user/:idUser', new UserController().listById);
 
 export default routes;
