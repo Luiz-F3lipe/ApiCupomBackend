@@ -1,71 +1,99 @@
 import { Request, Response } from "express";
+import {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+} from "../helpers/apiError";
 import { couponRepository } from "../repositories/CouponRepository";
 import { storeRepository } from "../repositories/StoreRepository";
 
 //Controlador da store
 export class StoreContoller {
-    //Função de cria disciplina
-    async create(req: Request, res: Response) {
-        const { name, image, link } = req.body
+  //Função de cria Loja
+  async create(req: Request, res: Response) {
+    const { name, image, link } = req.body;
 
-        if (!name || !image || !link) {
-            return res.status(400).json({ msg: 'Falha no body verifique se enviou todas as informações' })
-        }
+    if (!name || !image || !link) {
+      throw new BadRequestError(
+        "Falha no body verifique se enviou todas as informações"
+      );
+    }
+    const selectStore = await storeRepository.findOneBy({
+      name: name,
+    });
 
-        try {
-            //Cria um repositorio de store
-            const newStore = storeRepository.create({
-                name,
-                image,
-                link
-            })
-
-            //Salva no banco de dados
-            await storeRepository.save(newStore)
-
-            return res.status(201).json(newStore)
-
-        } catch (error) {
-            console.log(error)
-            return res.status(500).json({ msg: "Internal Server Error" })
-        }
+    if (selectStore) {
+      throw new ConflictError("Loja já cadastrada");
     }
 
-    async delete(req: Request, res: Response) {
-        const { idStore } = req.params;
+    //Cria um repositorio de store
+    const newStore = storeRepository.create({
+      name,
+      image,
+      link,
+    });
 
-        if (!idStore) {
-            return res.status(400).json({ msg: 'Falha ao deletar verifique se enviou os parametros' })
-        }
+    //Salva no banco de dados
+    await storeRepository.save(newStore);
 
-        try {
-            const selectStore = await storeRepository.findOneBy({ id: Number(idStore) })
+    return res.status(201).json(newStore);
+  }
 
-            if (!selectStore) {
-                return res.status(404).json({ msg: "Loja não encontrada!" })
-            }
+  async delete(req: Request, res: Response) {
+    const { idStore } = req.params;
 
-            await storeRepository.remove(selectStore);
-
-            return res.status(204).json({ msg: "Loja Deletada" });
-        } catch (error) {
-            //console.log(error)
-            return res.status(500).json({ msg: "Internal Server Error" })
-        }
+    if (!idStore) {
+      throw new BadRequestError("Precisa passar o id da loja");
     }
 
-    async list(req: Request, res: Response) {
-        try {
-            const stores = await storeRepository.find({
-                relations: {
-                    coupon: true,
-                },
-            })
+    const selectStore = await storeRepository.findOneBy({
+      id: Number(idStore),
+    });
 
-            return res.json(stores)
-        } catch (error) {
-            console.log(error)
-            return res.status(500).json({ msg: "Internal Server Error" })
-        }
+    if (!selectStore) {
+      throw new NotFoundError("Loja não encontrada");
     }
+
+    await storeRepository.remove(selectStore);
+
+    return res.status(204).json({ msg: "Loja Deletada" });
+  }
+
+  async list(req: Request, res: Response) {
+    try {
+      const stores = await storeRepository.find({
+        relations: {
+          coupon: true,
+        },
+      });
+
+      return res.json(stores);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ msg: "Internal Server Error" });
+    }
+  }
+
+  async listOne(req: Request, res: Response) {
+    const { idStore } = req.params;
+
+    if (!idStore) { 
+        throw new BadRequestError("Precisa passar o id da loja");
+    }
+
+    const store = await storeRepository.findOne({
+        where: {
+          id: Number(idStore),
+        },
+        relations: {
+          coupon: true,
+        }
+    });
+
+    if (!store) {
+        throw new NotFoundError("Loja não encontrada");
+    }
+
+    return res.json(store);
+  }
 }
