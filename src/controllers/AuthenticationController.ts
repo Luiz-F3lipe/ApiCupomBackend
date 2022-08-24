@@ -1,31 +1,30 @@
 import { Request, Response } from "express";
 import { userRepository } from "../repositories/UserRepository";
-import bcryt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { BadRequestError } from "../helpers/apiError";
 
 export class AuthenticationController {
     async login(req: Request, res: Response) {
         const { email, senha } = req.body;
 
-        const user = await userRepository.findOneBy({ email: email })
+        if (!email && !senha) {
+            throw new BadRequestError('Precisa passar o email e a senha');
+        }
+
+        const user = await userRepository.findOneBy({ email: email });
 
         if (!user) {
-            return res.status(500).json({ msg: 'Email ou senha invalidos' })
+            return res.status(500).json({ msg: 'Email ou senha invalidos' });
         }
 
-        const verifyPassword = await bcryt.compare(senha, user.senha)
-
-        if (!verifyPassword) {
-            return res.status(500).json({ msg: 'Email ou senha invalidos' })
+        if (user.senha !== senha) { 
+            throw new BadRequestError('Email ou senha invalidos');
         }
 
-        const token = jwt.sign({ id: user.id }, 'projetoIntegrador', { expiresIn: '1d' })
+        const { senha: _, ...userLogin } = user;
 
-        const { senha: _, ...userLogin } = user
+        const token = jwt.sign({ userLogin }, 'projetoIntegrador', { expiresIn: '1d' });
 
-        return res.json({
-            user: userLogin,
-            token: token,
-        })
+        return res.json({token: token})
     }
 }
